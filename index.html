@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body{
+            margin:0;
+            padding:0;
+            background: #eeeeee;
+            font-family: sans-serif;
+        }
+        .wrapper {
+            display:flex;
+            justify-content: space-between;
+            width:100vw;
+            height:100vh;
+            overflow: hidden;
+        }
+
+        .element {
+            width:50%;
+            flex-basis: 50%;
+        }
+        .codeflask{
+            position: relative!important;
+        }
+
+        #editor {
+            overflow: auto;
+        }
+
+
+        .output-div
+        {
+            height:50vh;
+            background:white;
+            padding:20px
+        }
+
+        #css-output{
+            margin:20px;
+            padding:20px 20px 20px 60px;
+            background: #eeeeee;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+<style contenteditable type="text/css" id="output"></style>
+<script src="https://cdn.jsdelivr.net/npm/less@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/codeflask@1.4.1/build/codeflask.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier/4.0.0/htmlminifier.min.js"></script>
+<div class="wrapper">
+    <div contenteditable="" id="editor" class="element">
+        .edited{
+        background:blue;
+        height: 50vh;
+        font-size:34px;
+        padding:20px;
+            p {
+                color:white;
+            }
+        }
+    </div>
+
+    <div class="element">
+        <div class="edited">
+           <p>Write LESS to edit my style!</p>
+        </div>
+
+        <div class="output-div"> The output is:
+            <div id="css-output">
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+
+    const App = function () {
+        this.editor = document.getElementById("editor");
+        this.flask = null;
+        this.init = async function () {
+            this.flask = new CodeFlask('#editor', {
+                language: 'css',
+                lineNumbers: true,
+            });
+            await applyStyle(this.flask.getCode());
+            this.editor.dispatchEvent(new Event('keyup'));
+
+            this.editor.addEventListener("keyup", async () => {
+                await applyStyle(this.flask.getCode());
+            }, false);
+            this.flask.onUpdate(function (code) {
+                applyStyle(code)
+            })
+        };
+
+
+        async function applyStyle(code) {
+            try {
+                const {css} = await less.render(code);
+                document.getElementById('output').innerText =  css;
+                document.getElementById('css-output').innerText = css
+            } catch (error) {
+                less.refresh()
+            }
+        }
+
+    };
+
+    const app = new App();
+    app.init();
+
+
+</script>
+</body>
+</html>
+
